@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QImageReader>
 #include <QFile>
+#include <QFileDialog>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -21,6 +23,8 @@ void MainWindow::init()
     // 状态
     isOn = false;
     ui->led_label->setPixmap(QPixmap(":/led/off"));
+    ui->openfile_lineEdit->setText(tr("文件名"));
+    mFilePath = ui->openfile_lineEdit->text();
 
     // 网址
     netAddrLabel = new QLabel;
@@ -71,4 +75,20 @@ void MainWindow::on_openserial_pushButton_pressed()
         isOn = true;
         ui->led_label->setPixmap(QPixmap(":/led/on"));
     }
+}
+
+void MainWindow::on_openfile_pushButton_released()
+{
+    // 判断目前是否已经打开过的路径
+    if((mFilePath == nullptr || mFilePath.length() == 0) && !QDir(mFilePath).exists()) {
+        // 如果没有打开过，或者目录不存在，那么将打开应用所在目录
+        mFilePath = ".";
+    }
+
+    // 打开新文件
+    mFilePath = QFileDialog::getOpenFileName(this, tr("打开"), mFilePath, tr("All Files(*.* *.**)"));
+    if(mFilePath.length() != 0) {
+        ui->openfile_lineEdit->setText(mFilePath);
+    }
+
 }

@@ -23,3 +23,5 @@ OTHER_FILES +=
 
 RESOURCES += \
     images.qrc
+
+QMAKE_CXXFLAGS += -std=c++0x

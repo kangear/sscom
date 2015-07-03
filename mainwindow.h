@@ -20,6 +20,8 @@ public:
 private slots:
     void on_openserial_pushButton_pressed();
 
+    void on_openfile_pushButton_released();
+
 private:
     Ui::MainWindow *ui;
     /** 网址 */
@@ -33,6 +35,8 @@ private:
     QLabel *sendLabel;
     bool isOn;
     void init();
+    /** 文件路径 */
+    QString mFilePath;
 };
 
 #endif // MAINWINDOW_H
