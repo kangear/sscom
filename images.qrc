@@ -1,6 +1,6 @@
 <RCC>
-    <qresource prefix="/new/prefix1">
-        <file alias=":/on">assert/LEDPURPLEON.bmp</file>
-        <file alias=":/off">assert/LEDPURPLEOFF.bmp</file>
+    <qresource prefix="/led">
+        <file alias="/on">assert/LEDPURPLEON.bmp</file>
+        <file alias="off">assert/LEDPURPLEOFF.bmp</file>
     </qresource>
 </RCC>

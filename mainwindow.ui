@@ -80,7 +80,7 @@
          </property>
          <item>
           <property name="text">
-           <string>ttyUSB1</string>
+           <string>ttyUSB0</string>
           </property>
          </item>
         </widget>
@@ -121,6 +121,74 @@
            <height>25</height>
           </size>
          </property>
+         <property name="currentText">
+          <string>115200</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>Custom</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>110</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>300</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>600</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2400</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4800</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>9600</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>14400</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>19200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>38400</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>56000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>57600</string>
+          </property>
+         </item>
          <item>
           <property name="text">
            <string>115200</string>
@@ -128,7 +196,12 @@
          </item>
          <item>
           <property name="text">
-           <string>New Item</string>
+           <string>128000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>256000</string>
           </property>
          </item>
         </widget>
@@ -169,6 +242,24 @@
            <height>25</height>
           </size>
          </property>
+         <property name="currentText">
+          <string>8</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>5</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>6</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>7</string>
+          </property>
+         </item>
          <item>
           <property name="text">
            <string>8</string>
@@ -217,6 +308,16 @@
            <string>1</string>
           </property>
          </item>
+         <item>
+          <property name="text">
+           <string>1.5</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
@@ -260,6 +361,26 @@
            <string>None</string>
           </property>
          </item>
+         <item>
+          <property name="text">
+           <string>Odd</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Even</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Mark</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Space</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
@@ -298,9 +419,27 @@
            <height>25</height>
           </size>
          </property>
+         <property name="currentText">
+          <string>None</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>Hardware</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Software</string>
+          </property>
+         </item>
          <item>
           <property name="text">
            <string>None</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Custom</string>
           </property>
          </item>
         </widget>
@@ -506,7 +645,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap resource="images.qrc">:/new/prefix1/:/off</pixmap>
+         <pixmap resource="images.qrc">:/led/:/off</pixmap>
         </property>
        </widget>
       </item>
@@ -545,6 +684,9 @@
         <property name="text">
          <string>发送新行</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item row="0" column="7" rowspan="5">
@@ -561,6 +703,9 @@
        <widget class="QCheckBox" name="timersend_checkBox">
         <property name="text">
          <string>定时发送</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
