@@ -4,6 +4,10 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QFont>
+#include <QPushButton>
+#include <QLineEdit>
+
+#define FDATE (char const[]){ __DATE__[7], __DATE__[8], __DATE__[9], '\0' }
 
 namespace Ui {
 class MainWindow;
@@ -24,19 +28,28 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QStatusBar *mStatusBar;
     /** 网址 */
-    QLabel *statusLabel;
+    QLabel *mStatusLabel;
     /** 状态标签 */
-    QLabel *netAddrLabel;
+    QLabel *mNetAddrLabel;
+    /** led */
+    QLabel *mLedLabel;
     QFont font;
     /** 总接收数量显示标签 */
-    QLabel *receiveLabel;
+    QLabel *mReceiveLabel;
     /** 总发送数量显示标签 */
-    QLabel *sendLabel;
+    QLabel *mSendLabel;
     bool isOn;
     void init();
     /** 文件路径 */
     QString mFilePath;
+    QPushButton *mSendButton;
+    QPushButton *mSendFileButton;
+    QPushButton *mOpenSerialButton;
+
+    QLineEdit *mOpenFileLineEdit;
+    QLineEdit *mTimerSendLineEdit;
 };
 
 #endif // MAINWINDOW_H

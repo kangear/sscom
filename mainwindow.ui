@@ -122,7 +122,7 @@
           </size>
          </property>
          <property name="currentText">
-          <string>115200</string>
+          <string>Custom</string>
          </property>
          <item>
           <property name="text">
@@ -243,7 +243,7 @@
           </size>
          </property>
          <property name="currentText">
-          <string>8</string>
+          <string>5</string>
          </property>
          <item>
           <property name="text">
@@ -420,7 +420,7 @@
           </size>
          </property>
          <property name="currentText">
-          <string>None</string>
+          <string>Hardware</string>
          </property>
          <item>
           <property name="text">
@@ -500,7 +500,7 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QFrame" name="">
+   <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
       <x>146</x>
@@ -521,7 +521,7 @@
       <height>181</height>
      </size>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>6</x>
@@ -622,7 +622,7 @@
       <item row="3" column="3" colspan="3">
        <widget class="QLineEdit" name="timer_lineEdit">
         <property name="inputMethodHints">
-         <set>Qt::ImhDigitsOnly|Qt::ImhFormattedNumbersOnly</set>
+         <set>Qt::ImhFormattedNumbersOnly</set>
         </property>
         <property name="text">
          <string>1000</string>
@@ -660,7 +660,7 @@
        </widget>
       </item>
       <item row="4" column="4" colspan="2">
-       <widget class="QPushButton" name="send_pushButton_2">
+       <widget class="QPushButton" name="send_pushButton">
         <property name="maximumSize">
          <size>
           <width>71</width>
@@ -744,7 +744,7 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>1</x>
@@ -776,7 +776,7 @@
       <widget class="QLineEdit" name="openfile_lineEdit"/>
      </item>
      <item>
-      <widget class="QPushButton" name="send_pushButton">
+      <widget class="QPushButton" name="sendfile_pushButton">
        <property name="maximumSize">
         <size>
          <width>71</width>
