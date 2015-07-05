@@ -61,6 +61,14 @@ void MainWindow::init()
 //            this, SLOT(showPortInfo(int)));
     connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(checkCustomBaudRatePolicy(int)));
+    connect(ui->dataBitsBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->stopBitsBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->parityBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->flowControlBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(currentIndexChanged()));
 
     // 字体大小
     font = QFont( "Arial", 10);
@@ -139,6 +147,18 @@ void MainWindow::init()
     updateSettings();
 }
 
+/**
+ * @brief MainWindow::currentIndexChanged
+ * @param idx
+ * handle StopBitsBox dataBitsBox stopBitsBox parityBox flowControlBox
+ */
+void MainWindow::currentIndexChanged()
+{
+    updateSettings();
+    if(serial->isOpen())
+        setParameter(serial, currentSettings);
+}
+
 void MainWindow::checkCustomBaudRatePolicy(int idx)
 {
     bool isCustomBaudRate = !ui->baudRateBox->itemData(idx).isValid();
@@ -197,11 +217,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_openserial_pushButton_pressed()
 {
-    if(isOn) {
-        // 1.更新状态
-        isOn = false;
+    if(serial->isOpen()) {
         mLedLabel->setPixmap(QPixmap(":/led/off"));
-//        mStatusLabel->setText("ttyUSB0 已关闭 115200bps,8,1 无检验 无流控");
         // 2.更新文字
         mOpenSerialButton->setText("打开串口");
         // 3.使能发送按键
@@ -214,10 +231,7 @@ void MainWindow::on_openserial_pushButton_pressed()
         // 0.打开串口
         if(!openSerialPort())
             return;
-        // 1.更新状态
-        isOn = true;
         mLedLabel->setPixmap(QPixmap(":/led/on"));
-//        mStatusLabel->setText("ttyUSB0 已打开 115200bps,8,1 无检验 无流控");
         // 2.更新文字
         mOpenSerialButton->setText("关闭串口");
         // 3.使能发送按键
@@ -225,6 +239,8 @@ void MainWindow::on_openserial_pushButton_pressed()
         // 4.使能发送文件按键
         mSendFileButton->setDisabled(false);
     }
+
+    updateSettings();
 }
 
 void MainWindow::on_openfile_pushButton_released()
@@ -266,6 +282,11 @@ void MainWindow::fillPortsInfo()
 
 void MainWindow::updateSettings()
 {
+    if(serial->isOpen())
+        currentSettings.stringStatus = "已打开";
+    else
+        currentSettings.stringStatus = "已关闭";
+
     currentSettings.name = ui->serialPortInfoListBox->currentText();
 
     // Baud Rate
@@ -304,6 +325,11 @@ void MainWindow::updateSettings()
 
     // new line
     currentSettings.sendNewLineEnabled = ui->newLineCheckBox->isChecked();
+
+    Settings p = currentSettings;
+    mStatusLabel->setText(tr("%1 %2 %3bps,%4,%5, %6, %7")
+                          .arg(p.name).arg(p.stringStatus).arg(p.stringBaudRate).arg(p.stringDataBits)
+                          .arg(p.stringStopBits).arg(p.stringParity).arg(p.stringFlowControl));
 }
 
 
@@ -316,9 +342,6 @@ bool MainWindow::setParameter(QSerialPort *serial, Settings settings)
             && serial->setParity(p.parity)
             && serial->setStopBits(p.stopBits)
             && serial->setFlowControl(p.flowControl)) {
-        mStatusLabel->setText(tr("%1 已打开 %2bps,%3,%4, %5, %6")
-                              .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                              .arg(p.stringStopBits).arg(p.stringParity).arg(p.stringFlowControl));
         ret = true;
     } else
         ret = false;
@@ -352,16 +375,7 @@ bool MainWindow::openSerialPort()
 //! [5]
 void MainWindow::closeSerialPort()
 {
-    Settings p = currentSettings;
     serial->close();
-//    console->setEnabled(false);
-//    ui->actionConnect->setEnabled(true);
-//    ui->actionDisconnect->setEnabled(false);
-//    ui->actionConfigure->setEnabled(true);
-//    ui->statusBar->showMessage(tr("Disconnected"));
-    mStatusLabel->setText(tr("%1 已关闭 %2bps,%3,%4, %5, %6")
-                          .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                          .arg(p.stringStopBits).arg(p.stringParity).arg(p.stringFlowControl));
 }
 //! [5]
 

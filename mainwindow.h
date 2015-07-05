@@ -36,6 +36,7 @@ public:
         QString stringFlowControl;
         bool localEchoEnabled;
         bool sendNewLineEnabled;
+        QString stringStatus;
     };
     Settings settings() const;
 
@@ -46,6 +47,7 @@ private slots:
     void handleError(QSerialPort::SerialPortError error);
     void writeData();
     void readData();
+    void currentIndexChanged();
 
     void on_clear_pushButton_released();
 
