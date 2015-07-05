@@ -84,6 +84,7 @@ private:
     bool openSerialPort();
     void closeSerialPort();
     void about();
+    bool setParameter(QSerialPort *serial, Settings settings);
 };
 
 #endif // MAINWINDOW_H

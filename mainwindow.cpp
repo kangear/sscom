@@ -149,6 +149,8 @@ void MainWindow::checkCustomBaudRatePolicy(int idx)
         edit->setValidator(intValidator);
     }
     updateSettings();
+    if(serial->isOpen())
+        setParameter(serial, currentSettings);
 }
 
 void MainWindow::fillPortsParameters()
@@ -305,6 +307,24 @@ void MainWindow::updateSettings()
 }
 
 
+bool MainWindow::setParameter(QSerialPort *serial, Settings settings)
+{
+    bool ret;
+    Settings p = settings;
+    if (serial->setBaudRate(p.baudRate)
+            && serial->setDataBits(p.dataBits)
+            && serial->setParity(p.parity)
+            && serial->setStopBits(p.stopBits)
+            && serial->setFlowControl(p.flowControl)) {
+        mStatusLabel->setText(tr("%1 已打开 %2bps,%3,%4, %5, %6")
+                              .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
+                              .arg(p.stringStopBits).arg(p.stringParity).arg(p.stringFlowControl));
+        ret = true;
+    } else
+        ret = false;
+    return ret;
+}
+
 //! [4]
 bool MainWindow::openSerialPort()
 {
@@ -312,30 +332,11 @@ bool MainWindow::openSerialPort()
     Settings p = currentSettings;
     serial->setPortName(p.name);
     if (serial->open(QIODevice::ReadWrite)) {
-        if (serial->setBaudRate(p.baudRate)
-                && serial->setDataBits(p.dataBits)
-                && serial->setParity(p.parity)
-                && serial->setStopBits(p.stopBits)
-                && serial->setFlowControl(p.flowControl)) {
-
-//            console->setEnabled(true);
-//            console->setLocalEchoEnabled(p.localEchoEnabled);
-//            ui->actionConnect->setEnabled(false);
-//            ui->actionDisconnect->setEnabled(true);
-//            ui->actionConfigure->setEnabled(false);
-//            ui->statusBar->showMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
-//                                       .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-//                                       .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
-
-            mStatusLabel->setText(tr("%1 已打开 %2bps,%3,%4, %5, %6")
-                                  .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                                  .arg(p.stringStopBits).arg(p.stringParity).arg(p.stringFlowControl));
-
+        if (setParameter(serial, p)) {
             ret = true;
         } else {
             serial->close();
             QMessageBox::critical(this, tr("Error"), serial->errorString());
-
             ui->statusBar->showMessage(tr("Open error"));
         }
     } else {
