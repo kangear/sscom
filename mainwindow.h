@@ -6,6 +6,8 @@
 #include <QFont>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QtSerialPort/QSerialPort>
+#include <QIntValidator>
 
 #define FDATE (char const[]){ __DATE__[7], __DATE__[8], __DATE__[9], '\0' }
 
@@ -20,11 +22,32 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    struct Settings {
+        QString name;
+        qint32 baudRate;
+        QString stringBaudRate;
+        QSerialPort::DataBits dataBits;
+        QString stringDataBits;
+        QSerialPort::Parity parity;
+        QString stringParity;
+        QSerialPort::StopBits stopBits;
+        QString stringStopBits;
+        QSerialPort::FlowControl flowControl;
+        QString stringFlowControl;
+        bool localEchoEnabled;
+        bool sendNewLineEnabled;
+    };
+    Settings settings() const;
 
 private slots:
+    void checkCustomBaudRatePolicy(int idx);
     void on_openserial_pushButton_pressed();
-
     void on_openfile_pushButton_released();
+    void handleError(QSerialPort::SerialPortError error);
+    void writeData();
+    void readData();
+
+    void on_clear_pushButton_released();
 
 private:
     Ui::MainWindow *ui;
@@ -50,6 +73,17 @@ private:
 
     QLineEdit *mOpenFileLineEdit;
     QLineEdit *mTimerSendLineEdit;
+
+    QSerialPort *serial;
+    QIntValidator *intValidator;
+    void fillPortsParameters();
+    Settings currentSettings;
+    void updateSettings();
+    void fillPortsInfo();
+
+    bool openSerialPort();
+    void closeSerialPort();
+    void about();
 };
 
 #endif // MAINWINDOW_H
