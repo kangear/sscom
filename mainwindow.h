@@ -48,6 +48,7 @@ private slots:
     void writeData();
     void readData();
     void currentIndexChanged();
+    void serialPortChanged();
 
     void on_clear_pushButton_released();
 

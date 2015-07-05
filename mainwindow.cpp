@@ -57,8 +57,8 @@ void MainWindow::init()
 
 //    connect(ui->applyButton, SIGNAL(clicked()),
 //            this, SLOT(apply()));
-//    connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
-//            this, SLOT(showPortInfo(int)));
+    connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(serialPortChanged()));
     connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(checkCustomBaudRatePolicy(int)));
     connect(ui->dataBitsBox, SIGNAL(currentIndexChanged(int)),
@@ -80,7 +80,7 @@ void MainWindow::init()
 
     // 设置窗口标题
     QDateTime dt = QDateTime::fromTime_t( (uint)getDateFromMacro(__DATE__));
-    this->setWindowTitle("sscom for linux 作者:kangear" + tr("(") + dt.toString("yyyy/MM") + tr(")"));
+    this->setWindowTitle("sscom for linux 0.1, 作者:kangear, " + dt.toString("yyyy/MM"));
 
     // 状态
     isOn = false;
@@ -144,6 +144,18 @@ void MainWindow::init()
 
     fillPortsParameters();
     fillPortsInfo();
+    updateSettings();
+}
+
+/**
+ * @brief MainWindow::currentIndexChanged
+ * @param idx
+ * handle StopBitsBox dataBitsBox stopBitsBox parityBox flowControlBox
+ */
+void MainWindow::serialPortChanged()
+{
+    if(serial->isOpen())
+        closeSerialPort();
     updateSettings();
 }
 
@@ -217,29 +229,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_openserial_pushButton_pressed()
 {
-    if(serial->isOpen()) {
-        mLedLabel->setPixmap(QPixmap(":/led/off"));
-        // 2.更新文字
-        mOpenSerialButton->setText("打开串口");
-        // 3.使能发送按键
-        mSendFileButton->setDisabled(true);
-        // 4.使能发送文件按键
-        mSendButton->setDisabled(true);
-
+    if(serial->isOpen())
         closeSerialPort();
-    } else {
-        // 0.打开串口
-        if(!openSerialPort())
-            return;
-        mLedLabel->setPixmap(QPixmap(":/led/on"));
-        // 2.更新文字
-        mOpenSerialButton->setText("关闭串口");
-        // 3.使能发送按键
-        mSendButton->setDisabled(false);
-        // 4.使能发送文件按键
-        mSendFileButton->setDisabled(false);
-    }
-
+    else
+        openSerialPort();
     updateSettings();
 }
 
@@ -356,6 +349,13 @@ bool MainWindow::openSerialPort()
     serial->setPortName(p.name);
     if (serial->open(QIODevice::ReadWrite)) {
         if (setParameter(serial, p)) {
+            mLedLabel->setPixmap(QPixmap(":/led/on"));
+            // 2.更新文字
+            mOpenSerialButton->setText("关闭串口");
+            // 3.使能发送按键
+            mSendButton->setDisabled(false);
+            // 4.使能发送文件按键
+            mSendFileButton->setDisabled(false);
             ret = true;
         } else {
             serial->close();
@@ -375,6 +375,13 @@ bool MainWindow::openSerialPort()
 //! [5]
 void MainWindow::closeSerialPort()
 {
+    mLedLabel->setPixmap(QPixmap(":/led/off"));
+    // 2.更新文字
+    mOpenSerialButton->setText("打开串口");
+    // 3.使能发送按键
+    mSendFileButton->setDisabled(true);
+    // 4.使能发送文件按键
+    mSendButton->setDisabled(true);
     serial->close();
 }
 //! [5]
