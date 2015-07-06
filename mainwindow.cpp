@@ -45,23 +45,15 @@ static time_t getDateFromMacro(char const *time) {
 MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
 {
 /*
-    struct Settings {
-        QString name;
-        qint32 baudRate;
-        QString stringBaudRate;
-        QSerialPort::DataBits dataBits;
-        QString stringDataBits;
-        QSerialPort::Parity parity;
-        QString stringParity;
-        QSerialPort::StopBits stopBits;
-        QString stringStopBits;
-        QSerialPort::FlowControl flowControl;
-        QString stringFlowControl;
-        bool localEchoEnabled;
-        bool sendNewLineEnabled;
         QString stringStatus;
-    };
- */
+        bool isDtr;
+        bool isRts;
+        bool isHexDisplay;
+        bool isHexSend;
+        bool isTimerSend;
+        qint32 timeTimerSend;
+        QString sendCache;
+**/
     Settings in =  inSettings;
     Settings out;
     QSettings settings("Yzs_think", "Application");
@@ -79,6 +71,13 @@ MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
         settings.setValue("stringFlowControl", in.stringFlowControl);
         settings.setValue("sendNewLineEnabled", in.sendNewLineEnabled);
         settings.setValue("stringStatus", in.stringStatus);
+        settings.setValue("isDtr", in.isDtr);
+        settings.setValue("isRts", in.isRts);
+        settings.setValue("isHexDisplay", in.isHexDisplay);
+        settings.setValue("isHexSend", in.isHexSend);
+        settings.setValue("isTimerSend", in.isTimerSend);
+        settings.setValue("timeTimerSend", in.timeTimerSend);
+        settings.setValue("sendCache", in.sendCache);
     } else {
         out.name               = settings.value("name", DEF_SETTINGS.name).toString();
         out.baudRate           = (QSerialPort::BaudRate)settings.value("baudRate", DEF_SETTINGS.baudRate).toInt();
@@ -93,6 +92,13 @@ MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
         out.stringFlowControl  = settings.value("stringFlowControl", DEF_SETTINGS.stringFlowControl).toString();
         out.sendNewLineEnabled = settings.value("sendNewLineEnabled", DEF_SETTINGS.sendNewLineEnabled).toBool();
         out.stringStatus       = settings.value("stringStatus", DEF_SETTINGS.stringStatus).toString();
+        out.isDtr              = settings.value("isDtr", DEF_SETTINGS.isDtr).toBool();
+        out.isRts              = settings.value("isRts", DEF_SETTINGS.isRts).toBool();
+        out.isHexDisplay       = settings.value("isHexDisplay", DEF_SETTINGS.isHexDisplay).toBool();
+        out.isHexSend          = settings.value("isHexSend", DEF_SETTINGS.isHexSend).toBool();
+        out.isTimerSend        = settings.value("isTimerSend", DEF_SETTINGS.isTimerSend).toBool();
+        out.timeTimerSend      = settings.value("timeTimerSend", DEF_SETTINGS.timeTimerSend).toInt();
+        out.sendCache          = settings.value("sendCache", DEF_SETTINGS.sendCache).toString();
     }
 
     return out;
@@ -100,6 +106,9 @@ MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
 
 void MainWindow::init()
 {
+    //读出上次保存Settings
+    currentSettings = doSettings(false, Settings());
+
     mStatusBar = ui->statusBar;
     mSendButton = ui->send_pushButton;
     mSendFileButton = ui->sendfile_pushButton;
@@ -109,26 +118,10 @@ void MainWindow::init()
     mTimerSendLineEdit = ui->timer_lineEdit;
 
     intValidator = new QIntValidator(0, 4000000, this);
-
     ui->baudRateBox->setInsertPolicy(QComboBox::NoInsert);
 
-//    connect(ui->applyButton, SIGNAL(clicked()),
-//            this, SLOT(apply()));
-    connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(serialPortChanged()));
-    connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(checkCustomBaudRatePolicy(int)));
-    connect(ui->dataBitsBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(currentIndexChanged()));
-    connect(ui->stopBitsBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(currentIndexChanged()));
-    connect(ui->parityBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(currentIndexChanged()));
-    connect(ui->flowControlBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(currentIndexChanged()));
-
     // 字体大小
-    font = QFont( "Arial", 10);
+    font = QFont( "Arial", 8);
 
     // 只能输入数字的正则
     QValidator *numberOnlyValidator; //检验器，只允许输入数字
@@ -137,7 +130,7 @@ void MainWindow::init()
 
     // 设置窗口标题
     QDateTime dt = QDateTime::fromTime_t( (uint)getDateFromMacro(__DATE__));
-    this->setWindowTitle("sscom for linux 0.1, 作者:kangear, " + dt.toString("yyyy/MM"));
+    this->setWindowTitle("sscom for linux 0.1, 作者:kangear " + dt.toString("yyyy/MM")); //
 
     // 状态
     isOn = false;
@@ -148,7 +141,7 @@ void MainWindow::init()
 
     // 网址
     mNetAddrLabel = new QLabel;
-    mNetAddrLabel->setMinimumSize(20, 14); // 设置标签最小大小
+    mNetAddrLabel->setMinimumSize(80, 14); // 设置标签最小大小
     mNetAddrLabel->setText("www.daxia.com");
     mNetAddrLabel->setAlignment(Qt::AlignHCenter);
     mNetAddrLabel->setFont(font);
@@ -169,15 +162,22 @@ void MainWindow::init()
 
     // 状态栏
     mStatusLabel = new QLabel;
-    mStatusLabel->setMinimumSize(100, 14); // 设置标签最小大小
-    mStatusLabel->setText("ttyUSB0 已关闭 115200bps,8,1 无检验 无流控");
-    mStatusLabel->setAlignment(Qt::AlignHCenter);
+    mStatusLabel->setMinimumSize(240, 14); // 设置标签最小大小
+    mStatusLabel->setAlignment(Qt::AlignLeft);
     mStatusLabel->setFont(font);
+
+    // mFinallyLabel TODO:弄清楚意思后去实现它
+    mFinallyLabel = new QLabel;
+    mFinallyLabel->setMinimumSize(160, 14); // 设置标签最小大小
+    mFinallyLabel->setAlignment(Qt::AlignLeft);
+    mFinallyLabel->setText("CTS:0  DSR:0  RLSD:0 ");
+    mFinallyLabel->setFont(font);
 
     mStatusBar->addWidget(mNetAddrLabel);
     mStatusBar->addWidget(mReceiveLabel);
     mStatusBar->addWidget(mSendLabel);
     mStatusBar->addWidget(mStatusLabel);
+    mStatusBar->addWidget(mFinallyLabel);
 
     // 2.更新文字
     mOpenSerialButton->setText("打开串口");
@@ -199,9 +199,24 @@ void MainWindow::init()
     connect(mSendButton, SIGNAL(released()), this, SLOT(writeData()));
 //! [3]
 
+    // 1.先填充参数
     fillPortsParameters();
     fillPortsInfo();
     updateSettings();
+
+    // 2.连接改变事件，一定要在填充参数之后进行连接，否则会出现无法填充已经保存参数
+    connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(serialPortChanged()));
+    connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(checkCustomBaudRatePolicy(int)));
+    connect(ui->dataBitsBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->stopBitsBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->parityBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->flowControlBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(currentIndexChanged()));
 }
 
 /**
@@ -242,6 +257,13 @@ void MainWindow::checkCustomBaudRatePolicy(int idx)
         setParameter(serial, currentSettings);
 }
 
+void setCurrentIndex(QComboBox *comboBox, QString text)
+{
+    int index = comboBox->findText(text); //use default exact match
+    if(index >= 0)
+         comboBox->setCurrentIndex(index);
+}
+
 void MainWindow::fillPortsParameters()
 {
     // fill baud rate (is not the entire list of available values,
@@ -257,7 +279,6 @@ void MainWindow::fillPortsParameters()
     ui->dataBitsBox->addItem(QStringLiteral("6"), QSerialPort::Data6);
     ui->dataBitsBox->addItem(QStringLiteral("7"), QSerialPort::Data7);
     ui->dataBitsBox->addItem(QStringLiteral("8"), QSerialPort::Data8);
-    ui->dataBitsBox->setCurrentIndex(3);
 
     // fill parity
     ui->parityBox->addItem(QStringLiteral("None"), QSerialPort::NoParity);
@@ -275,12 +296,30 @@ void MainWindow::fillPortsParameters()
 
     // fill flow control
     ui->flowControlBox->addItem(QStringLiteral("None"), QSerialPort::NoFlowControl);
-    ui->flowControlBox->addItem(QStringLiteral("RTS/CTS"), QSerialPort::HardwareControl);
-    ui->flowControlBox->addItem(QStringLiteral("XON/XOFF"), QSerialPort::SoftwareControl);
+    ui->flowControlBox->addItem(QStringLiteral("Hardware"), QSerialPort::HardwareControl);
+    ui->flowControlBox->addItem(QStringLiteral("Software"), QSerialPort::SoftwareControl);
+
+    // 还原上次保存的参数
+    setCurrentIndex(ui->baudRateBox,    currentSettings.stringBaudRate);
+    setCurrentIndex(ui->dataBitsBox,    currentSettings.stringDataBits);
+    setCurrentIndex(ui->stopBitsBox,    currentSettings.stringStopBits);
+    setCurrentIndex(ui->parityBox,      currentSettings.stringParity);
+    setCurrentIndex(ui->flowControlBox, currentSettings.stringFlowControl);
+
+    ui->dtr_checkBox->setChecked(currentSettings.isDtr);
+    ui->rts_checkBox->setChecked(currentSettings.isRts);
+    ui->hexdisplay_checkBox->setChecked(currentSettings.isHexDisplay);
+    ui->hexsend_checkBox->setChecked(currentSettings.isHexSend);
+    ui->newLineCheckBox->setChecked(currentSettings.sendNewLineEnabled);
+    ui->timersend_checkBox->setChecked(currentSettings.isTimerSend);
+    ui->timer_lineEdit->setText(QString::number(currentSettings.timeTimerSend));
+    ui->sendLineEdit->setText(currentSettings.sendCache);
 }
 
 MainWindow::~MainWindow()
 {
+    updateSettings();
+    doSettings(true, currentSettings);
     delete ui;
 }
 
@@ -376,6 +415,15 @@ void MainWindow::updateSettings()
     // new line
     currentSettings.sendNewLineEnabled = ui->newLineCheckBox->isChecked();
 
+    currentSettings.isDtr = ui->dtr_checkBox->isChecked();
+    currentSettings.isRts = ui->rts_checkBox->isChecked();
+    currentSettings.isHexDisplay = ui->hexdisplay_checkBox->isChecked();
+    currentSettings.isHexSend = ui->hexsend_checkBox->isChecked();
+    currentSettings.sendNewLineEnabled = ui->newLineCheckBox->isChecked();
+    currentSettings.isTimerSend = ui->timersend_checkBox->isChecked();
+    currentSettings.timeTimerSend = ui->timer_lineEdit->text().toInt();
+    currentSettings.sendCache = ui->sendLineEdit->text();
+
     Settings p = currentSettings;
     mStatusLabel->setText(tr("%1 %2 %3bps,%4,%5, %6, %7")
                           .arg(p.name).arg(p.stringStatus).arg(p.stringBaudRate).arg(p.stringDataBits)
@@ -468,10 +516,6 @@ void MainWindow::readData()
 {
     QByteArray data = serial->readAll();
     QString str = QString::fromLatin1(data.data());
-    // 是否发送新行
-//    if(str.length() !=0 && currentSettings.sendNewLineEnabled)
-//        str += "\r\n";
-//    qDebug() << str;
     QString a = ui->receive_textBrowser->toPlainText();
     ui->receive_textBrowser->setText(a + str);
 

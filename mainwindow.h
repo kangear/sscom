@@ -35,6 +35,13 @@ public:
         bool localEchoEnabled;
         bool sendNewLineEnabled;
         QString stringStatus;
+        bool isDtr;
+        bool isRts;
+        bool isHexDisplay;
+        bool isHexSend;
+        bool isTimerSend;
+        qint32 timeTimerSend;
+        QString sendCache;
     }DEF_SETTINGS = {
         "",
         QSerialPort::BaudRate::Baud115200,
@@ -49,6 +56,13 @@ public:
         QString::number(QSerialPort::FlowControl::NoFlowControl),
         false,
         true,
+        "",
+        false,
+        false,
+        false,
+        false,
+        false,
+        1000,
         ""
     };
     Settings settings() const;
@@ -70,6 +84,8 @@ private:
     QStatusBar *mStatusBar;
     /** 网址 */
     QLabel *mStatusLabel;
+    /** 网址 */
+    QLabel *mFinallyLabel;
     /** 状态标签 */
     QLabel *mNetAddrLabel;
     /** led */
