@@ -562,7 +562,7 @@ void MainWindow::readData()
     QString str = QString::fromLatin1(data.data());
     QString res = str.toLatin1().toHex().toUpper();
     QString a = ui->receive_textBrowser->toPlainText();
-    ui->receive_textBrowser->setText(a + data.toHex().toUpper());
+    ui->receive_textBrowser->setText(a + data);
 
     // 根据设置来判断是否需要转换成HEX
 
