@@ -130,7 +130,7 @@ void MainWindow::init()
 
     // 设置窗口标题
     QDateTime dt = QDateTime::fromTime_t( (uint)getDateFromMacro(__DATE__));
-    this->setWindowTitle("sscom for linux 0.1, 作者:kangear " + dt.toString("yyyy/MM")); //
+    this->setWindowTitle("sscom for linux 0.2, 作者:kangear " + dt.toString("yyyy/MM")); //
 
     // 状态
     isOn = false;
