@@ -104,8 +104,23 @@ MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
     return out;
 }
 
+QByteArray bin2Hex(const QByteArray& input)
+{
+    QByteArray ret = {"123456789"};
+    for(int i=0; i<ret.length(); i++) {
+        if(i%2 != 0)
+            ret.insert(i, ' ');
+    }
+
+    qDebug() << ret.toUpper();
+
+    return ret;
+}
+
 void MainWindow::init()
 {
+    bin2Hex("HELLO");
+
     //读出上次保存Settings
     currentSettings = doSettings(false, Settings());
 
@@ -217,6 +232,23 @@ void MainWindow::init()
             this, SLOT(currentIndexChanged()));
     connect(ui->flowControlBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(currentIndexChanged()));
+
+    connect(ui->dtr_checkBox, SIGNAL(stateChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->rts_checkBox, SIGNAL(stateChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->timersend_checkBox, SIGNAL(stateChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->hexdisplay_checkBox, SIGNAL(stateChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->hexsend_checkBox, SIGNAL(stateChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->newLineCheckBox, SIGNAL(stateChanged(int)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->timer_lineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(currentIndexChanged()));
+    connect(ui->sendLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(currentIndexChanged()));
 }
 
 /**
@@ -238,9 +270,22 @@ void MainWindow::serialPortChanged()
  */
 void MainWindow::currentIndexChanged()
 {
+    qDebug() << __func__;
+    Settings old = currentSettings;
     updateSettings();
+    Settings now = currentSettings;
     if(serial->isOpen())
         setParameter(serial, currentSettings);
+
+    // 更新显示方式
+    if(old.isHexDisplay != now.isHexDisplay) {
+        qDebug() << "is need hexDisplay:" << now.isHexDisplay;
+    }
+
+    // 更新发送方式
+    if(old.isHexSend != now.isHexSend) {
+        qDebug() << "is need isHexSend:" << now.isHexSend;
+    }
 }
 
 void MainWindow::checkCustomBaudRatePolicy(int idx)
@@ -510,14 +555,16 @@ void MainWindow::writeData()
     serial->write(data);
 }
 //! [6]
-
 //! [7]
 void MainWindow::readData()
 {
     QByteArray data = serial->readAll();
     QString str = QString::fromLatin1(data.data());
+    QString res = str.toLatin1().toHex().toUpper();
     QString a = ui->receive_textBrowser->toPlainText();
-    ui->receive_textBrowser->setText(a + str);
+    ui->receive_textBrowser->setText(a + data.toHex().toUpper());
+
+    // 根据设置来判断是否需要转换成HEX
 
     // 将光标移动到最后位置
     QTextCursor tmpCursor = ui->receive_textBrowser->textCursor();
