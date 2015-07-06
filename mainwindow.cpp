@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <QtSerialPort/QSerialPortInfo>
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -39,6 +40,62 @@ static time_t getDateFromMacro(char const *time) {
     t.tm_isdst = -1;
 
     return mktime(&t);
+}
+
+MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
+{
+/*
+    struct Settings {
+        QString name;
+        qint32 baudRate;
+        QString stringBaudRate;
+        QSerialPort::DataBits dataBits;
+        QString stringDataBits;
+        QSerialPort::Parity parity;
+        QString stringParity;
+        QSerialPort::StopBits stopBits;
+        QString stringStopBits;
+        QSerialPort::FlowControl flowControl;
+        QString stringFlowControl;
+        bool localEchoEnabled;
+        bool sendNewLineEnabled;
+        QString stringStatus;
+    };
+ */
+    Settings in =  inSettings;
+    Settings out;
+    QSettings settings("Yzs_think", "Application");
+    if(isWrite) {
+        settings.setValue("name", in.name);
+        settings.setValue("baudRate", in.baudRate);
+        settings.setValue("stringBaudRate", in.stringBaudRate);
+        settings.setValue("dataBits", in.dataBits);
+        settings.setValue("stringDataBits", in.stringDataBits);
+        settings.setValue("parity", in.parity);
+        settings.setValue("stringParity", in.stringParity);
+        settings.setValue("stopBits", in.stopBits);
+        settings.setValue("stringStopBits", in.stringStopBits);
+        settings.setValue("flowControl", in.flowControl);
+        settings.setValue("stringFlowControl", in.stringFlowControl);
+        settings.setValue("sendNewLineEnabled", in.sendNewLineEnabled);
+        settings.setValue("stringStatus", in.stringStatus);
+    } else {
+        out.name               = settings.value("name", DEF_SETTINGS.name).toString();
+        out.baudRate           = (QSerialPort::BaudRate)settings.value("baudRate", DEF_SETTINGS.baudRate).toInt();
+        out.stringBaudRate     = settings.value("stringBaudRate", DEF_SETTINGS.stringBaudRate).toString();
+        out.dataBits           = (QSerialPort::DataBits)settings.value("dataBits", DEF_SETTINGS.dataBits).toInt();
+        out.stringDataBits     = settings.value("stringDataBits", DEF_SETTINGS.stringDataBits).toString();
+        out.parity             = (QSerialPort::Parity)settings.value("parity", DEF_SETTINGS.parity).toInt();
+        out.stringParity       = settings.value("stringParity", DEF_SETTINGS.stringParity).toString();
+        out.stopBits           = (QSerialPort::StopBits)settings.value("stopBits", DEF_SETTINGS.stopBits).toInt();
+        out.stringStopBits     = settings.value("stringStopBits", DEF_SETTINGS.stringStopBits).toString();
+        out.flowControl        = (QSerialPort::FlowControl)settings.value("flowControl", DEF_SETTINGS.flowControl).toInt();
+        out.stringFlowControl  = settings.value("stringFlowControl", DEF_SETTINGS.stringFlowControl).toString();
+        out.sendNewLineEnabled = settings.value("sendNewLineEnabled", DEF_SETTINGS.sendNewLineEnabled).toBool();
+        out.stringStatus       = settings.value("stringStatus", DEF_SETTINGS.stringStatus).toString();
+    }
+
+    return out;
 }
 
 void MainWindow::init()

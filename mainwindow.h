@@ -9,8 +9,6 @@
 #include <QtSerialPort/QSerialPort>
 #include <QIntValidator>
 
-#define FDATE (char const[]){ __DATE__[7], __DATE__[8], __DATE__[9], '\0' }
-
 namespace Ui {
 class MainWindow;
 }
@@ -37,6 +35,21 @@ public:
         bool localEchoEnabled;
         bool sendNewLineEnabled;
         QString stringStatus;
+    }DEF_SETTINGS = {
+        "",
+        QSerialPort::BaudRate::Baud115200,
+        QString::number(QSerialPort::Baud115200),
+        QSerialPort::DataBits::Data8,
+        QString::number(QSerialPort::DataBits::Data8),
+        QSerialPort::Parity::NoParity,
+        QString::number(QSerialPort::Parity::NoParity),
+        QSerialPort::StopBits::OneStop,
+        QString::number(QSerialPort::StopBits::OneStop),
+        QSerialPort::FlowControl::NoFlowControl,
+        QString::number(QSerialPort::FlowControl::NoFlowControl),
+        false,
+        true,
+        ""
     };
     Settings settings() const;
 
@@ -88,6 +101,7 @@ private:
     void closeSerialPort();
     void about();
     bool setParameter(QSerialPort *serial, Settings settings);
+    Settings doSettings(bool isWrite, Settings inSettings);
 };
 
 #endif // MAINWINDOW_H
