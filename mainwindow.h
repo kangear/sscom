@@ -40,7 +40,7 @@ public:
         bool isHexDisplay;
         bool isHexSend;
         bool isTimerSend;
-        qint32 timeTimerSend;
+        qint32 timerLength;
         QString sendCache;
         qint64 sendNum;
         qint64 receiveNum;
@@ -80,6 +80,7 @@ private slots:
     void readData();
     void currentIndexChanged();
     void serialPortChanged();
+    void onSendButtonRelease();
 
     void on_clear_pushButton_released();
 
@@ -115,6 +116,7 @@ private:
     void fillPortsParameters();
     Settings currentSettings;
     void updateSettings();
+    void updateUi(Settings p);
     void fillPortsInfo();
 
     bool openSerialPort();
@@ -122,6 +124,7 @@ private:
     void about();
     bool setParameter(QSerialPort *serial, Settings settings);
     Settings doSettings(bool isWrite, Settings inSettings);
+    QTimer *autoSendTimer;
 };
 
 #endif // MAINWINDOW_H

@@ -9,6 +9,7 @@
 #include <QDateTime>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QSettings>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -44,16 +45,6 @@ static time_t getDateFromMacro(char const *time) {
 
 MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
 {
-/*
-        QString stringStatus;
-        bool isDtr;
-        bool isRts;
-        bool isHexDisplay;
-        bool isHexSend;
-        bool isTimerSend;
-        qint32 timeTimerSend;
-        QString sendCache;
-**/
     Settings in =  inSettings;
     Settings out;
     QSettings settings("Yzs_think", "Application");
@@ -75,8 +66,9 @@ MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
         settings.setValue("isRts", in.isRts);
         settings.setValue("isHexDisplay", in.isHexDisplay);
         settings.setValue("isHexSend", in.isHexSend);
-        settings.setValue("isTimerSend", in.isTimerSend);
-        settings.setValue("timeTimerSend", in.timeTimerSend);
+        // 和Windows版本同步，不保存定时发送开关
+        settings.setValue("isTimerSend", DEF_SETTINGS.isTimerSend);
+        settings.setValue("timeTimerSend", in.timerLength);
         settings.setValue("sendCache", in.sendCache);
     } else {
         out.name               = settings.value("name", DEF_SETTINGS.name).toString();
@@ -97,7 +89,7 @@ MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
         out.isHexDisplay       = settings.value("isHexDisplay", DEF_SETTINGS.isHexDisplay).toBool();
         out.isHexSend          = settings.value("isHexSend", DEF_SETTINGS.isHexSend).toBool();
         out.isTimerSend        = settings.value("isTimerSend", DEF_SETTINGS.isTimerSend).toBool();
-        out.timeTimerSend      = settings.value("timeTimerSend", DEF_SETTINGS.timeTimerSend).toInt();
+        out.timerLength        = settings.value("timeTimerSend", DEF_SETTINGS.timerLength).toInt();
         out.sendCache          = settings.value("sendCache", DEF_SETTINGS.sendCache).toString();
     }
 
@@ -120,6 +112,11 @@ QByteArray bin2Hex(const QByteArray& input)
 void MainWindow::init()
 {
     bin2Hex("HELLO");
+
+    // 初始化定时发送定时器
+    autoSendTimer = new QTimer(this);
+    //将定时器超时信号与槽(功能函数)联系起来
+    connect( autoSendTimer,SIGNAL(timeout()), this, SLOT(writeData()) );
 
     //读出上次保存Settings
     currentSettings = doSettings(false, Settings());
@@ -211,7 +208,7 @@ void MainWindow::init()
 //! [2]
     connect(serial, SIGNAL(readyRead()), this, SLOT(readData()));
 //! [2]
-    connect(mSendButton, SIGNAL(released()), this, SLOT(writeData()));
+    connect(mSendButton, SIGNAL(released()), this, SLOT(onSendButtonRelease()));
 //! [3]
 
     // 1.先填充参数
@@ -286,6 +283,25 @@ void MainWindow::currentIndexChanged()
     if(old.isHexSend != now.isHexSend) {
         qDebug() << "is need isHexSend:" << now.isHexSend;
     }
+
+    // 更新AutoSend Qtimer
+    if(old.isTimerSend != now.isTimerSend) {
+        if(now.isTimerSend) {
+            // 禁用timerLength编辑
+            ui->timer_lineEdit->setDisabled(true);
+            // 停止运行定时器
+            if (autoSendTimer->isActive() )
+                autoSendTimer->stop();
+            //开始运行定时器，定时时间间隔为1000ms
+            autoSendTimer->start(now.timerLength);
+        } else {
+            // 启用timerLength编辑
+            ui->timer_lineEdit->setDisabled(false);
+            // 停止运行定时器
+            if (autoSendTimer->isActive() )
+                autoSendTimer->stop();
+        }
+    }
 }
 
 void MainWindow::checkCustomBaudRatePolicy(int idx)
@@ -357,15 +373,22 @@ void MainWindow::fillPortsParameters()
     ui->hexsend_checkBox->setChecked(currentSettings.isHexSend);
     ui->newLineCheckBox->setChecked(currentSettings.sendNewLineEnabled);
     ui->timersend_checkBox->setChecked(currentSettings.isTimerSend);
-    ui->timer_lineEdit->setText(QString::number(currentSettings.timeTimerSend));
+    ui->timer_lineEdit->setText(QString::number(currentSettings.timerLength));
     ui->sendLineEdit->setText(currentSettings.sendCache);
 }
 
 MainWindow::~MainWindow()
 {
+    // 更新最终设置并保存
     updateSettings();
     doSettings(true, currentSettings);
+    // 防止没有关闭串口
+    closeSerialPort();
+    // 删除申请的对象
+    delete autoSendTimer;
+    delete serial;
     delete ui;
+
 }
 
 void MainWindow::on_openserial_pushButton_pressed()
@@ -466,18 +489,24 @@ void MainWindow::updateSettings()
     currentSettings.isHexSend = ui->hexsend_checkBox->isChecked();
     currentSettings.sendNewLineEnabled = ui->newLineCheckBox->isChecked();
     currentSettings.isTimerSend = ui->timersend_checkBox->isChecked();
-    currentSettings.timeTimerSend = ui->timer_lineEdit->text().toInt();
+    currentSettings.timerLength = ui->timer_lineEdit->text().toInt();
     currentSettings.sendCache = ui->sendLineEdit->text();
 
-    Settings p = currentSettings;
+    // 更新状态栏
+    updateUi(currentSettings);
+}
+
+void MainWindow::updateUi(Settings p)
+{
+    // 更新状态栏
     mStatusLabel->setText(tr("%1 %2 %3bps,%4,%5, %6, %7")
                           .arg(p.name).arg(p.stringStatus).arg(p.stringBaudRate).arg(p.stringDataBits)
                           .arg(p.stringStopBits).arg(p.stringParity).arg(p.stringFlowControl));
 
+    // 更新接收发送总量
     mReceiveLabel->setText(tr("R:%1").arg(p.receiveNum));
     mSendLabel->setText(tr("S:%1").arg(p.sendNum));
 }
-
 
 bool MainWindow::setParameter(QSerialPort *serial, Settings settings)
 {
@@ -547,9 +576,19 @@ void MainWindow::about()
                           "using Qt, with a menu bar, toolbars, and a status bar."));
 }
 
+void MainWindow::onSendButtonRelease()
+{
+    currentIndexChanged();
+    writeData();
+}
+
 //! [6]
 void MainWindow::writeData()
 {
+    if(!serial->isOpen()) {
+        return;
+    }
+
     Settings s = currentSettings;
     QString text = ui->sendLineEdit->text();
     qDebug() << text;
