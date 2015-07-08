@@ -252,7 +252,7 @@ void MainWindow::init()
 }
 
 /**
- * @brief MainWindow::currentIndexChanged
+ * @brief MainWindow::serialPortChanged
  * @param idx
  * handle StopBitsBox dataBitsBox stopBitsBox parityBox flowControlBox
  */
@@ -473,6 +473,9 @@ void MainWindow::updateSettings()
     mStatusLabel->setText(tr("%1 %2 %3bps,%4,%5, %6, %7")
                           .arg(p.name).arg(p.stringStatus).arg(p.stringBaudRate).arg(p.stringDataBits)
                           .arg(p.stringStopBits).arg(p.stringParity).arg(p.stringFlowControl));
+
+    mReceiveLabel->setText(tr("R:%1").arg(p.receiveNum));
+    mSendLabel->setText(tr("S:%1").arg(p.sendNum));
 }
 
 
@@ -547,12 +550,18 @@ void MainWindow::about()
 //! [6]
 void MainWindow::writeData()
 {
+    Settings s = currentSettings;
     QString text = ui->sendLineEdit->text();
     qDebug() << text;
     if(text.length() !=0 && currentSettings.sendNewLineEnabled)
         text += "\r\n";
     QByteArray data = text.toLatin1();
-    serial->write(data);
+    qint64 len = serial->write(data);
+    // 更新显示长度
+    if(len >= 0) {
+        currentSettings.sendNum += len;
+        currentIndexChanged();
+    }
 }
 //! [6]
 //! [7]
@@ -563,6 +572,14 @@ void MainWindow::readData()
     QString res = str.toLatin1().toHex().toUpper();
     QString a = ui->receive_textBrowser->toPlainText();
     ui->receive_textBrowser->setText(a + data);
+
+    // 更新显示长度
+    qint64 len = data.length();
+    if(len >= 0) {
+        currentSettings.receiveNum += len;
+        currentIndexChanged();
+    }
+
 
     // 根据设置来判断是否需要转换成HEX
 
@@ -655,18 +672,6 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
     }
 }
 //! [8]
-
-//void MainWindow::initActionsConnections()
-//{
-//    connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort()));
-//    connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort()));
-//    connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(close()));
-//    connect(ui->actionConfigure, SIGNAL(triggered()), settings, SLOT(show()));
-//    connect(ui->actionClear, SIGNAL(triggered()), console, SLOT(clear()));
-//    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about()));
-//    connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-//}
-
 /**
  * @brief MainWindow::on_clear_pushButton_released
  * 清除接收区内容

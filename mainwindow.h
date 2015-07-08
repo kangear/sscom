@@ -42,6 +42,8 @@ public:
         bool isTimerSend;
         qint32 timeTimerSend;
         QString sendCache;
+        qint64 sendNum;
+        qint64 receiveNum;
     }DEF_SETTINGS = {
         "",
         QSerialPort::BaudRate::Baud115200,
@@ -63,7 +65,9 @@ public:
         false,
         false,
         1000,
-        ""
+        "",
+        0,
+        0
     };
     Settings settings() const;
 
