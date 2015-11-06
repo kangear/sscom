@@ -42,6 +42,7 @@ public:
         bool isTimerSend;
         qint32 timerLength;
         QString sendCache;
+        QString sendStringCache;
         qint64 sendNum;
         qint64 receiveNum;
     }DEF_SETTINGS = {
@@ -66,6 +67,7 @@ public:
         false,
         1000,
         "",
+        "",
         0,
         0
     };
@@ -83,6 +85,8 @@ private slots:
     void onSendButtonRelease();
 
     void on_clear_pushButton_released();
+
+    void on_hexsend_checkBox_released();
 
 private:
     Ui::MainWindow *ui;
@@ -125,6 +129,7 @@ private:
     bool setParameter(QSerialPort *serial, Settings settings);
     Settings doSettings(bool isWrite, Settings inSettings);
     QTimer *autoSendTimer;
+    const bool DEBUG = false;
 };
 
 #endif // MAINWINDOW_H

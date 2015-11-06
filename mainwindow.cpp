@@ -260,6 +260,52 @@ void MainWindow::serialPortChanged()
     updateSettings();
 }
 
+/** 将hex(61 62 63 64 65 66 67) to String(abcdefg) */
+static QString hexToQString(QString hexStr) {
+    QString ret;
+    QStringList list = hexStr.split(" ", QString::SkipEmptyParts);
+    for(QString qs:list) {
+        bool bStatus = false;
+        int a = qs.toInt(&bStatus, 16);
+        if(bStatus && (qs.length() == 2)) {
+            QString sA = QString(QChar(a));
+            // qDebug() << "a:" << a << "sA:" << sA << "qs:" + qs;
+            ret.append(sA);
+        } else { /* 转换失败，使用默认字体串 */
+            qDebug() << "error!!!";
+            ret = "abcdefg";
+        }
+    }
+    return ret;
+}
+
+/** 将String(abcdefg) to Hex(61 62 63 64 65 66 67) */
+static QString stringToHex(QString str) {
+    QString ret;
+    /* 将String(abcdefg) to Hex */
+    for(int i=0; i<str.length(); i++) {
+        /* 将字符串中字符转换成QChar */
+        QChar random = str.at(i).toLatin1();
+        QString hexUnicode;
+        QString str1;
+        /* 将QChar转换成unicode */
+        hexUnicode.setNum(random.unicode(),16);
+        /**
+         * 由于unicode位数随机，所以需要根据情况进行格式化
+         * 只保留末两位，如果不够两位补0
+         */
+        if(hexUnicode.length() >= 2) {
+            str1 = hexUnicode.mid(hexUnicode.length() - 2, hexUnicode.length());
+        } else if(hexUnicode.length() == 1) {
+            str1 = str1.prepend("0");
+        } else {
+            str1 = "";
+        }
+        ret.append(str1.toUpper() + " ");
+    }
+    return ret;
+}
+
 /**
  * @brief MainWindow::currentIndexChanged
  * @param idx
@@ -267,7 +313,7 @@ void MainWindow::serialPortChanged()
  */
 void MainWindow::currentIndexChanged()
 {
-    qDebug() << __func__;
+    // qDebug() << __func__;
     Settings old = currentSettings;
     updateSettings();
     Settings now = currentSettings;
@@ -279,10 +325,36 @@ void MainWindow::currentIndexChanged()
         qDebug() << "is need hexDisplay:" << now.isHexDisplay;
     }
 
+    // 输入框文字发生改变，更新缓存
+    if(QString::compare(old.sendCache, now.sendCache, Qt::CaseInsensitive) != 0) {
+        currentSettings.sendStringCache = now.sendCache;
+        /* 如果是16进制状态，需要将16进制数转换成字符串 */
+        if(now.isHexSend) {
+            currentSettings.sendStringCache = hexToQString(now.sendCache);
+        }
+        /* 将不写换成大写 */
+        ui->sendLineEdit->setText(ui->sendLineEdit->text().toUpper());
+    }
+
     // 更新发送方式
     if(old.isHexSend != now.isHexSend) {
-        qDebug() << "is need isHexSend:" << now.isHexSend;
+        /* 需要将输入框内容有字体串改为16进制显示 */
+        QString inputStr = ui->sendLineEdit->text();
+        if(now.isHexSend) {
+            /* 将原数据保存 */
+            currentSettings.sendCache = stringToHex(inputStr);
+            currentSettings.sendStringCache = inputStr;
+        } else {
+            /* 将数据保存 */
+            QString tmp = hexToQString(inputStr);
+            currentSettings.sendCache = tmp;
+            currentSettings.sendStringCache = tmp;
+        }
+        // qDebug() << "sendStringCache:" << currentSettings.sendStringCache;
+        ui->sendLineEdit->setText(currentSettings.sendCache);
     }
+
+    if(DEBUG) qDebug() << "sendStringCache:" << currentSettings.sendStringCache;
 
     // 更新AutoSend Qtimer
     if(old.isTimerSend != now.isTimerSend) {
@@ -375,6 +447,9 @@ void MainWindow::fillPortsParameters()
     ui->timersend_checkBox->setChecked(currentSettings.isTimerSend);
     ui->timer_lineEdit->setText(QString::number(currentSettings.timerLength));
     ui->sendLineEdit->setText(currentSettings.sendCache);
+
+    /* 启动后第一次更新 */
+    currentIndexChanged();
 }
 
 MainWindow::~MainWindow()
@@ -397,7 +472,7 @@ void MainWindow::on_openserial_pushButton_pressed()
         closeSerialPort();
     else
         openSerialPort();
-    updateSettings();
+    currentIndexChanged();
 }
 
 void MainWindow::on_openfile_pushButton_released()
@@ -582,7 +657,7 @@ void MainWindow::onSendButtonRelease()
     writeData();
 }
 
-//! [6]
+/** 发送数据 */
 void MainWindow::writeData()
 {
     if(!serial->isOpen()) {
@@ -590,15 +665,16 @@ void MainWindow::writeData()
     }
 
     Settings s = currentSettings;
-    QString text = ui->sendLineEdit->text();
-    qDebug() << text;
-    if(text.length() !=0 && currentSettings.sendNewLineEnabled)
+    QString text = s.sendStringCache;
+    if(DEBUG) qDebug() << __func__ << ":" << text;
+    if(text.length() !=0 && s.sendNewLineEnabled)
         text += "\r\n";
+
     QByteArray data = text.toLatin1();
     qint64 len = serial->write(data);
     // 更新显示长度
     if(len >= 0) {
-        currentSettings.sendNum += len;
+        s.sendNum += len;
         currentIndexChanged();
     }
 }
@@ -718,4 +794,10 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
 void MainWindow::on_clear_pushButton_released()
 {
     ui->receive_textBrowser->clear();
+    currentIndexChanged();
+}
+
+/** 16进制发送 checkbox按下时 */
+void MainWindow::on_hexsend_checkBox_released()
+{
 }
