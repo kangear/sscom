@@ -246,7 +246,8 @@ void MainWindow::serialPortChanged()
 }
 
 /** 将hex(61 62 63 64 65 66 67) to String(abcdefg) */
-static QString hexToQString(QString hexStr) {
+static QString hexToQString(bool isDebug, QString hexStr) {
+    if(isDebug) qDebug() << __func__ << ": " << hexStr;
     QString ret;
     QStringList list = hexStr.split(" ", QString::SkipEmptyParts);
     for(QString qs:list) {
@@ -254,36 +255,41 @@ static QString hexToQString(QString hexStr) {
         int a = qs.toInt(&bStatus, 16);
         if(bStatus && (qs.length() == 2)) {
             QString sA = QString(QChar(a));
-            // qDebug() << "a:" << a << "sA:" << sA << "qs:" + qs;
+            if(isDebug) qDebug() << "a:" << a << "sA:" << sA << "qs:" + qs;
             ret.append(sA);
-        } else { /* 转换失败，使用默认字体串 */
-            qDebug() << "error!!!";
-            ret = "abcdefg";
+        } else {/* 转换失败，使用默认字体串 */
+            if(isDebug) qDebug() << "error!!!";
+//            ret = "abcdefg";
+            break;
         }
     }
     return ret;
 }
 
 /** 将String(abcdefg) to Hex(61 62 63 64 65 66 67) */
-static QString stringToHex(QString str) {
+static QString stringToHex(bool isDebug, QString str) {
+    if(isDebug) qDebug() << __func__ << ": " << str;
     QString ret;
     /* 将String(abcdefg) to Hex */
     for(int i=0; i<str.length(); i++) {
         /* 将字符串中字符转换成QChar */
         QChar random = str.at(i).toLatin1();
-        QString hexUnicode;
+        QString hex;
         QString str1;
         /* 将QChar转换成unicode */
-        hexUnicode.setNum(random.unicode(),16);
+        hex.setNum(random.unicode(), 16);
         /**
          * 由于unicode位数随机，所以需要根据情况进行格式化
          * 只保留末两位，如果不够两位补0
          */
-        if(hexUnicode.length() >= 2) {
-            str1 = hexUnicode.mid(hexUnicode.length() - 2, hexUnicode.length());
-        } else if(hexUnicode.length() == 1) {
-            str1 = str1.prepend("0");
+        if(hex.length() >= 2) {
+            if(isDebug) qDebug() << "hex.length() >= 2 hex:" << hex;
+            str1 = hex.mid(hex.length() - 2, hex.length());
+        } else if(hex.length() == 1) {
+            if(isDebug) qDebug() << "hex.length() == 1 hex:" << hex;
+            str1 = hex.prepend("0");
         } else {
+            if(isDebug) qDebug() << "else";
             str1 = "";
         }
         ret.append(str1.toUpper() + " ");
@@ -315,7 +321,7 @@ void MainWindow::currentIndexChanged()
         currentSettings.sendStringCache = now.sendCache;
         /* 如果是16进制状态，需要将16进制数转换成字符串 */
         if(now.isHexSend) {
-            currentSettings.sendStringCache = hexToQString(now.sendCache);
+            currentSettings.sendStringCache = hexToQString(false, now.sendCache);
         }
         /* 将不写换成大写 */
         ui->sendLineEdit->setText(ui->sendLineEdit->text().toUpper());
@@ -327,11 +333,11 @@ void MainWindow::currentIndexChanged()
         QString inputStr = ui->sendLineEdit->text();
         if(now.isHexSend) {
             /* 将原数据保存 */
-            currentSettings.sendCache = stringToHex(inputStr);
+            currentSettings.sendCache = stringToHex(false, inputStr);
             currentSettings.sendStringCache = inputStr;
         } else {
             /* 将数据保存 */
-            QString tmp = hexToQString(inputStr);
+            QString tmp = hexToQString(false ,inputStr);
             currentSettings.sendCache = tmp;
             currentSettings.sendStringCache = tmp;
         }
@@ -339,7 +345,7 @@ void MainWindow::currentIndexChanged()
         ui->sendLineEdit->setText(currentSettings.sendCache);
     }
 
-    if(DEBUG) qDebug() << "sendStringCache:" << currentSettings.sendStringCache;
+    if(DEBUG) qDebug() << "sendStringCache:" << stringToHex(false, currentSettings.sendStringCache);
 
     // 更新AutoSend Qtimer
     if(old.isTimerSend != now.isTimerSend) {
