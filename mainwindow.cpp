@@ -96,23 +96,8 @@ MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
     return out;
 }
 
-QByteArray bin2Hex(const QByteArray& input)
-{
-    QByteArray ret = {"123456789"};
-    for(int i=0; i<ret.length(); i++) {
-        if(i%2 != 0)
-            ret.insert(i, ' ');
-    }
-
-    qDebug() << ret.toUpper();
-
-    return ret;
-}
-
 void MainWindow::init()
 {
-    bin2Hex("HELLO");
-
     // 初始化定时发送定时器
     autoSendTimer = new QTimer(this);
     //将定时器超时信号与槽(功能函数)联系起来
