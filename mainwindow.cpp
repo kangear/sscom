@@ -316,14 +316,15 @@ void MainWindow::currentIndexChanged()
         qDebug() << "is need hexDisplay:" << now.isHexDisplay;
     }
 
-    // 输入框文字发生改变，更新缓存
-    if(QString::compare(old.sendCache, now.sendCache, Qt::CaseInsensitive) != 0) {
+    // 输入框文字发生改变，更新缓存 解决第一次启动时缓存为空问题
+    if(currentSettings.sendStringCache == "" ||
+            QString::compare(old.sendCache, now.sendCache, Qt::CaseInsensitive) != 0) {
         currentSettings.sendStringCache = now.sendCache;
         /* 如果是16进制状态，需要将16进制数转换成字符串 */
         if(now.isHexSend) {
             currentSettings.sendStringCache = hexToQString(false, now.sendCache);
         }
-        /* 将不写换成大写 */
+        /* 将小写换成大写 */
         ui->sendLineEdit->setText(ui->sendLineEdit->text().toUpper());
     }
 

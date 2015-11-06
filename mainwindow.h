@@ -129,7 +129,7 @@ private:
     bool setParameter(QSerialPort *serial, Settings settings);
     Settings doSettings(bool isWrite, Settings inSettings);
     QTimer *autoSendTimer;
-    const bool DEBUG = false;
+    const bool DEBUG = true;
 };
 
 #endif // MAINWINDOW_H
