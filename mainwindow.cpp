@@ -91,6 +91,8 @@ MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
         out.isTimerSend        = settings.value("isTimerSend", DEF_SETTINGS.isTimerSend).toBool();
         out.timerLength        = settings.value("timeTimerSend", DEF_SETTINGS.timerLength).toInt();
         out.sendCache          = settings.value("sendCache", DEF_SETTINGS.sendCache).toString();
+        out.sendNum            = 0;
+        out.receiveNum         = 0;
     }
 
     return out;
@@ -571,6 +573,8 @@ void MainWindow::updateUi(Settings p)
                           .arg(p.stringStopBits).arg(p.stringParity).arg(p.stringFlowControl));
 
     // 更新接收发送总量
+    if(DEBUG) qDebug() <<"p.receiveNum:" << p.receiveNum;
+    if(DEBUG) qDebug() <<"p.sendNum:" << p.sendNum;
     mReceiveLabel->setText(tr("R:%1").arg(p.receiveNum));
     mSendLabel->setText(tr("S:%1").arg(p.sendNum));
 }
@@ -656,19 +660,19 @@ void MainWindow::writeData()
         return;
     }
 
-    Settings s = currentSettings;
-    QString text = s.sendStringCache;
+    QString text = currentSettings.sendStringCache;
     if(DEBUG) qDebug() << __func__ << ":" << text;
-    if(text.length() !=0 && s.sendNewLineEnabled)
+    if(text.length() !=0 && currentSettings.sendNewLineEnabled)
         text += "\r\n";
 
     QByteArray data = text.toLatin1();
-    qint64 len = serial->write(data);
+    qint32 len = serial->write(data);
     // 更新显示长度
     if(len >= 0) {
-        s.sendNum += len;
-        currentIndexChanged();
+        currentSettings.sendNum += len;
+        updateUi(currentSettings);
     }
+    if(DEBUG) qDebug() <<"currentSettings.sendNum:" << currentSettings.sendNum;
 }
 //! [6]
 //! [7]
@@ -681,7 +685,8 @@ void MainWindow::readData()
     ui->receive_textBrowser->setText(a + data);
 
     // 更新显示长度
-    qint64 len = data.length();
+    qint32 len = data.length();
+    if(DEBUG) qDebug() <<"len:" << len;
     if(len >= 0) {
         currentSettings.receiveNum += len;
         currentIndexChanged();

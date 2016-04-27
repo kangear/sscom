@@ -43,8 +43,8 @@ public:
         qint32 timerLength;
         QString sendCache;
         QString sendStringCache;
-        qint64 sendNum;
-        qint64 receiveNum;
+        qint32 sendNum;
+        qint32 receiveNum;
     }DEF_SETTINGS = {
         "",
         QSerialPort::BaudRate::Baud115200,
