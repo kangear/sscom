@@ -255,19 +255,6 @@
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
-   <widget class="QTextBrowser" name="receive_textBrowser2">
-    <property name="geometry">
-     <rect>
-      <x>323</x>
-      <y>562</y>
-      <width>291</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="inputMethodHints">
-     <set>Qt::ImhNone</set>
-    </property>
-   </widget>
    <widget class="Line" name="line_2">
     <property name="geometry">
      <rect>
@@ -466,54 +453,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2" colspan="2">
-       <widget class="QLabel" name="led_label">
-        <property name="minimumSize">
-         <size>
-          <width>16</width>
-          <height>21</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16</width>
-          <height>21</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"> qproperty-wordWrap: true;</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="pixmap">
-         <pixmap>:/led/:/off</pixmap>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QPushButton" name="openserial_pushButton_6">
-        <property name="maximumSize">
-         <size>
-          <width>71</width>
-          <height>27</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>打开串口</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </widget>
@@ -603,7 +542,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="clear_pushButton">
+      <widget class="QPushButton" name="clear_pushButton2">
        <property name="maximumSize">
         <size>
          <width>71</width>
@@ -851,7 +790,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="led_label_6">
+         <widget class="QLabel" name="led_label">
           <property name="minimumSize">
            <size>
             <width>16</width>
@@ -925,7 +864,7 @@
       <set>Qt::ImhNone</set>
      </property>
     </widget>
-    <widget class="QPushButton" name="clear_pushButton_6">
+    <widget class="QPushButton" name="clear_pushButton">
      <property name="geometry">
       <rect>
        <x>350</x>

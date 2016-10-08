@@ -78,7 +78,7 @@ private slots:
     void on_openserial_pushButton_pressed();
     void on_openfile_pushButton_released();
     void handleError(QSerialPort::SerialPortError error);
-    void writeData();
+    void writeData(QString inText);
     void readData();
     void currentIndexChanged();
     void serialPortChanged();
@@ -87,6 +87,16 @@ private slots:
     void on_clear_pushButton_released();
 
     void on_hexsend_checkBox_released();
+
+    void on_pushButton_26_released();
+
+    void on_pushButton_27_released();
+
+    void on_pushButton_28_released();
+
+    void on_pushButton_29_released();
+
+    void on_pushButton_30_released();
 
 private:
     Ui::MainWindow *ui;
@@ -130,6 +140,7 @@ private:
     Settings doSettings(bool isWrite, Settings inSettings);
     QTimer *autoSendTimer;
     const bool DEBUG = true;
+    void  trans(int ch);
 };
 
 #endif // MAINWINDOW_H

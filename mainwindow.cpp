@@ -103,7 +103,7 @@ void MainWindow::init()
     // 初始化定时发送定时器
     autoSendTimer = new QTimer(this);
     //将定时器超时信号与槽(功能函数)联系起来
-    connect( autoSendTimer,SIGNAL(timeout()), this, SLOT(writeData()) );
+    connect( autoSendTimer,SIGNAL(timeout()), this, SLOT(writeData(QString)) );
 
     //读出上次保存Settings
     currentSettings = doSettings(false, Settings());
@@ -184,6 +184,7 @@ void MainWindow::init()
     mSendButton->setDisabled(true);
     // 4.使能发送文件按键
     mSendFileButton->setDisabled(true);
+    ui->groupBox_3->setDisabled(true);
 
     //! [1]
     serial = new QSerialPort(this);
@@ -609,6 +610,7 @@ bool MainWindow::openSerialPort()
             mSendButton->setDisabled(false);
             // 4.使能发送文件按键
             mSendFileButton->setDisabled(false);
+            ui->groupBox_3->setDisabled(false);
             ret = true;
         } else {
             serial->close();
@@ -635,6 +637,7 @@ void MainWindow::closeSerialPort()
     mSendFileButton->setDisabled(true);
     // 4.使能发送文件按键
     mSendButton->setDisabled(true);
+    ui->groupBox_3->setDisabled(true);
     serial->close();
 }
 //! [5]
@@ -650,19 +653,21 @@ void MainWindow::about()
 void MainWindow::onSendButtonRelease()
 {
     currentIndexChanged();
-    writeData();
+    writeData(NULL);
 }
 
 /** 发送数据 */
-void MainWindow::writeData()
+void MainWindow::writeData(QString inText)
 {
     if(!serial->isOpen()) {
         return;
     }
 
-    QString text = currentSettings.sendStringCache;
+    QString text = inText;
+    if(text == NULL)
+        text = currentSettings.sendStringCache;
     if(DEBUG) qDebug() << __func__ << ":" << text;
-    if(text.length() !=0 && currentSettings.sendNewLineEnabled)
+    if(text.length() !=0)
         text += "\r\n";
 
     QByteArray data = text.toLatin1();
@@ -797,4 +802,36 @@ void MainWindow::on_clear_pushButton_released()
 /** 16进制发送 checkbox按下时 */
 void MainWindow::on_hexsend_checkBox_released()
 {
+}
+
+void MainWindow::on_pushButton_26_released()
+{
+    trans(4);
+}
+
+void MainWindow::trans(int ch)
+{
+    currentIndexChanged();
+    writeData("TRANS " + QString::number(ch));
+}
+
+void MainWindow::on_pushButton_27_released()
+{
+    trans(5);
+}
+
+void MainWindow::on_pushButton_28_released()
+{
+    trans(6);
+}
+
+void MainWindow::on_pushButton_29_released()
+{
+    trans(7);
+}
+
+void MainWindow::on_pushButton_30_released()
+{
+    currentIndexChanged();
+    writeData("IRVAL");
 }
