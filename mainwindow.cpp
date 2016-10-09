@@ -19,30 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
     init();
 }
 
-/**
- * @brief getDateFromMacro
- * @param time __DATE__
- * @return
- */
-static time_t getDateFromMacro(char const *time) {
-    char s_month[5];
-    int month, day, year;
-    struct tm t;
-    memset(&t, 0, sizeof(tm));
-    static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
-
-    sscanf(time, "%s %d %d", s_month, &day, &year);
-
-    month = (strstr(month_names, s_month)-month_names)/3;
-
-    t.tm_mon = month;
-    t.tm_mday = day;
-    t.tm_year = year - 1900;
-    t.tm_isdst = -1;
-
-    return mktime(&t);
-}
-
 MainWindow::Settings MainWindow::doSettings(bool isWrite, Settings inSettings)
 {
     Settings in =  inSettings;
@@ -128,7 +104,7 @@ void MainWindow::init()
     numberOnlyValidator = new QRegExpValidator(regx, mTimerSendLineEdit);
 
     // 设置窗口标题
-    QDateTime dt = QDateTime::fromTime_t( (uint)getDateFromMacro(__DATE__));
+    QDateTime dt = QDateTime::fromTime_t(QDateTime::currentMSecsSinceEpoch() / 1000);
     this->setWindowTitle("sscom for linux 0.4, 作者:kangear " + dt.toString("yyyy/MM")); //
 
     // 状态
