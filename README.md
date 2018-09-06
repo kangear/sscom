@@ -17,5 +17,6 @@ make
 
 # 解决
 ```
-sscom.pro:12: Unable to find file for inclusion /src/serialport/qt4support/serialport.prf
+sscom.pro:12: Unable to find file for inclusion /src/serialport/qt4support/serialport.pr，
+要使用qt5编译 ，
 ```
