@@ -681,8 +681,10 @@ void MainWindow::readData()
     QByteArray data = serial->readAll();
     QString str = QString::fromLatin1(data.data());
     QString res = str.toLatin1().toHex().toUpper();
-    QString a = ui->receive_textBrowser->toPlainText();
-    ui->receive_textBrowser->setText(a + data);
+//    QString a = ui->receive_textBrowser->toPlainText();
+    QString newStr = currentSettings.isHexDisplay ? stringToHex(false, str) : str;
+    ui->receive_textBrowser->moveCursor (QTextCursor::End);
+    ui->receive_textBrowser->insertPlainText(newStr);
 
     // 更新显示长度
     qint32 len = data.length();

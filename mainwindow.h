@@ -6,7 +6,7 @@
 #include <QFont>
 #include <QPushButton>
 #include <QLineEdit>
-#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort>
 #include <QIntValidator>
 
 namespace Ui {
