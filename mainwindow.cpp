@@ -674,17 +674,30 @@ void MainWindow::writeData()
     }
     if(DEBUG) qDebug() <<"currentSettings.sendNum:" << currentSettings.sendNum;
 }
+
+/**
+ * bytesToHex
+ * @brief bytesToHex
+ * @param array
+ * @return
+ */
+static QString bytesToHex(QByteArray array) {
+    QString hex = array.toHex().toUpper();
+    return hex.replace(QRegularExpression("(.{2})"), "\\1 ");
+}
+
 //! [6]
 //! [7]
 void MainWindow::readData()
 {
     QByteArray data = serial->readAll();
     QString str = QString::fromLatin1(data.data());
-    QString res = str.toLatin1().toHex().toUpper();
-//    QString a = ui->receive_textBrowser->toPlainText();
-    QString newStr = currentSettings.isHexDisplay ? stringToHex(false, str) : str;
+    QString hex = bytesToHex(data);
+    QString newStr = currentSettings.isHexDisplay ? hex : str;
     ui->receive_textBrowser->moveCursor (QTextCursor::End);
     ui->receive_textBrowser->insertPlainText(newStr);
+    ui->receive_textBrowser->moveCursor (QTextCursor::End);
+    ui->receive_textBrowser->insertPlainText("\n");
 
     // 更新显示长度
     qint32 len = data.length();
@@ -693,14 +706,6 @@ void MainWindow::readData()
         currentSettings.receiveNum += len;
         currentIndexChanged();
     }
-
-
-    // 根据设置来判断是否需要转换成HEX
-
-    // 将光标移动到最后位置
-    QTextCursor tmpCursor = ui->receive_textBrowser->textCursor();
-    tmpCursor.movePosition(QTextCursor::End, QTextCursor::MoveAnchor, 4);
-    ui->receive_textBrowser->setTextCursor(tmpCursor);
 }
 //! [7]
 
