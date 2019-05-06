@@ -16,12 +16,6 @@
     <height>520</height>
    </size>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>620</width>
-    <height>520</height>
-   </size>
-  </property>
   <property name="font">
    <font>
     <pointsize>10</pointsize>
@@ -304,6 +298,11 @@
       <width>610</width>
       <height>261</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu Mono</family>
+     </font>
     </property>
     <property name="inputMethodHints">
      <set>Qt::ImhNone</set>
