@@ -653,6 +653,17 @@ void MainWindow::onSendButtonRelease()
     writeData();
 }
 
+/**
+ * bytesToHex
+ * @brief bytesToHex
+ * @param array
+ * @return
+ */
+static QString bytesToHex(QByteArray array) {
+    QString hex = array.toHex().toUpper();
+    return hex.replace(QRegularExpression("(.{2})"), "\\1 ");
+}
+
 /** 发送数据 */
 void MainWindow::writeData()
 {
@@ -666,6 +677,7 @@ void MainWindow::writeData()
         text += "\r\n";
 
     QByteArray data = text.toLatin1();
+    qDebug() << "writeData: " << bytesToHex(data);
     qint32 len = serial->write(data);
     // 更新显示长度
     if(len >= 0) {
@@ -675,21 +687,20 @@ void MainWindow::writeData()
     if(DEBUG) qDebug() <<"currentSettings.sendNum:" << currentSettings.sendNum;
 }
 
-/**
- * bytesToHex
- * @brief bytesToHex
- * @param array
- * @return
- */
-static QString bytesToHex(QByteArray array) {
-    QString hex = array.toHex().toUpper();
-    return hex.replace(QRegularExpression("(.{2})"), "\\1 ");
-}
+qint64 lastTimestamp = 0;
 
 //! [6]
 //! [7]
 void MainWindow::readData()
 {
+    // 1.处理换行 距离上次接收间100ms换行
+    qint64 timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    if ((timestamp - lastTimestamp) > 100 && currentSettings.receiveNum > 0) {
+        ui->receive_textBrowser->insertPlainText("\n");
+    }
+    lastTimestamp = timestamp;
+
+    // 2.读取数据
     QByteArray data = serial->readAll();
     QString str = QString::fromLatin1(data.data());
     QString hex = bytesToHex(data);
@@ -697,9 +708,8 @@ void MainWindow::readData()
     ui->receive_textBrowser->moveCursor (QTextCursor::End);
     ui->receive_textBrowser->insertPlainText(newStr);
     ui->receive_textBrowser->moveCursor (QTextCursor::End);
-    ui->receive_textBrowser->insertPlainText("\n");
 
-    // 更新显示长度
+    // 3.更新显示长度
     qint32 len = data.length();
     if(DEBUG) qDebug() <<"len:" << len;
     if(len >= 0) {
