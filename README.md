@@ -26,6 +26,7 @@ make
 ## Mac自行源码编译
 ```shell
 brew install qt5
+export PATH=$PATH:/usr/local/Cellar/qt@5/5.15.2_1/bin
 qmake 
 make
 ```
