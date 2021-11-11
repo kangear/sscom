@@ -688,7 +688,6 @@ void MainWindow::writeData()
 }
 
 qint64 lastTimestamp = 0;
-
 //! [6]
 //! [7]
 void MainWindow::readData()
@@ -706,6 +705,12 @@ void MainWindow::readData()
     QString hex = bytesToHex(data);
     QString newStr = currentSettings.isHexDisplay ? hex : str;
     ui->receive_textBrowser->moveCursor (QTextCursor::End);
+
+    // 禁用ascii terminal color
+    QRegExp rx("\u001B\\[[;\\d]*m");
+    newStr = newStr.replace(rx, "");
+
+    // 显示
     ui->receive_textBrowser->insertPlainText(newStr);
     ui->receive_textBrowser->moveCursor (QTextCursor::End);
 
