@@ -2,9 +2,11 @@
 Linux版本 串口调试助手
 
 # 效果
-## 预览效果
+## Linux预览效果
 ![GitHub Logo](/assert/sscom_for_linux_0.2.png)
 
+## Mac预览效果
+tHub Logo](/assert/sscom_for_mac.png)
 
 ## 未实现功能
 ![GitHub Logo](/assert/sscom_for_linux_0.2_unspport.png)
@@ -15,9 +17,15 @@ Linux版本 串口调试助手
 ## 下载编译好的
 移步至 https://github.com/kangear/sscom/releases 下载AppImage版本，可以任意Linux发行版直接运行。如果运行不了，记得提issue。
 
-## 自行源码编译
+## Linux自行源码编译
 ```shell
 sudo apt-get install qtcreator libqt5serialport5-dev libudev-dev qt5-default
+qmake 
+make
+```
+## Mac自行源码编译
+```shell
+brew install qt5
 qmake 
 make
 ```
