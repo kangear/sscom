@@ -6,7 +6,7 @@ Linux版本 串口调试助手
 ![GitHub Logo](/assert/sscom_for_linux_0.2.png)
 
 ## Mac预览效果
-tHub Logo](/assert/sscom_for_mac.png)
+![GitHub Logo](/assert/sscom_for_mac.png)
 
 ## 未实现功能
 ![GitHub Logo](/assert/sscom_for_linux_0.2_unspport.png)
