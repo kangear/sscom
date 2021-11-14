@@ -22,7 +22,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>sscom for linux</string>
+   <string>sscom for Linux/Mac</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QWidget" name="layoutWidget">
