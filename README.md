@@ -1,6 +1,8 @@
 # sscom
 Linux/Mac版本 串口调试助手
 
+[English](README.en.md)
+
 # 效果
 ## 预览效果
 ![GitHub Logo](/assert/Selection_441.png)
